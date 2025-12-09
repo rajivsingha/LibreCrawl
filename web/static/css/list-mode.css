@@ -39,11 +39,11 @@
     opacity: 0;
 }
 
-.mode-option input[type="radio"]:checked + .mode-label {
+.mode-option input[type="radio"]:checked+.mode-label {
     color: #c4b5fd;
 }
 
-.mode-option input[type="radio"]:checked ~ * {
+.mode-option input[type="radio"]:checked~* {
     border-color: #8b5cf6;
 }
 
@@ -273,12 +273,91 @@
     .mode-selector {
         flex-direction: column;
     }
-    
+
     .mode-option {
         max-width: none;
     }
-    
+
     .list-mode-tabs {
         flex-direction: column;
     }
+}
+
+/* Collapsible List Mode Styles */
+.list-mode-collapse-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 0;
+}
+
+.list-mode-collapse-header:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: #8b5cf6;
+}
+
+.collapse-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.collapse-chevron {
+    color: #8b5cf6;
+    transition: transform 0.3s ease;
+}
+
+.list-mode-collapse-header.collapsed .collapse-chevron {
+    transform: rotate(-90deg);
+}
+
+.collapse-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.collapse-url-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.15);
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.collapse-url-count:empty {
+    display: none;
+}
+
+.collapse-hint {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.list-mode-collapsible {
+    max-height: 500px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+    opacity: 1;
+    padding-top: 16px;
+}
+
+.list-mode-collapsible.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    margin-top: 0;
+}
+
+/* When collapsed, hide the border-bottom of the header */
+.list-mode-collapse-header.collapsed {
+    margin-bottom: 0;
 }

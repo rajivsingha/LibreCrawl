@@ -233,7 +233,13 @@ function startCrawl() {
         // Use the first URL as base URL for display purposes
         crawlState.baseUrl = window.validUrlList[0];
         updateStatus(`Starting list mode crawl with ${window.validUrlList.length} URLs...`);
+
+        // Collapse the URL list section to give more space to results
+        if (typeof window.collapseListMode === 'function') {
+            window.collapseListMode();
+        }
     }
+
 
     crawlState.isRunning = true;
     crawlState.isPaused = false;

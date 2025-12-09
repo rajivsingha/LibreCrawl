@@ -83,7 +83,13 @@ async function validateUrlList() {
             } else {
                 document.getElementById('invalidUrlBadge').style.display = 'none';
             }
+
+            // Update the collapse header URL count
+            if (typeof updateCollapseUrlCount === 'function') {
+                updateCollapseUrlCount();
+            }
         }
+
     } catch (error) {
         console.error('Error validating URL list:', error);
     }
@@ -146,6 +152,72 @@ function clearFile() {
     window.validUrlList = [];
     window.invalidUrlList = [];
 }
+
+// Track collapse state
+window.listModeCollapsed = false;
+
+// Toggle collapse state of the URL list section
+function toggleListModeCollapse() {
+    const header = document.getElementById('listModeCollapseHeader');
+    const content = document.getElementById('listModeCollapsible');
+
+    if (!header || !content) return;
+
+    window.listModeCollapsed = !window.listModeCollapsed;
+
+    if (window.listModeCollapsed) {
+        header.classList.add('collapsed');
+        content.classList.add('collapsed');
+        updateCollapseUrlCount();
+    } else {
+        header.classList.remove('collapsed');
+        content.classList.remove('collapsed');
+    }
+}
+
+// Collapse the URL list section (called when crawl starts)
+function collapseListMode() {
+    const header = document.getElementById('listModeCollapseHeader');
+    const content = document.getElementById('listModeCollapsible');
+
+    if (!header || !content) return;
+
+    window.listModeCollapsed = true;
+    header.classList.add('collapsed');
+    content.classList.add('collapsed');
+    updateCollapseUrlCount();
+}
+
+// Expand the URL list section
+function expandListMode() {
+    const header = document.getElementById('listModeCollapseHeader');
+    const content = document.getElementById('listModeCollapsible');
+
+    if (!header || !content) return;
+
+    window.listModeCollapsed = false;
+    header.classList.remove('collapsed');
+    content.classList.remove('collapsed');
+}
+
+// Update the URL count shown in the collapsed header
+function updateCollapseUrlCount() {
+    const countEl = document.getElementById('collapseUrlCount');
+    if (!countEl) return;
+
+    const validCount = window.validUrlList ? window.validUrlList.length : 0;
+    if (validCount > 0) {
+        countEl.textContent = `${validCount} URLs`;
+    } else {
+        countEl.textContent = '';
+    }
+}
+
+// Expose functions to global scope
+window.toggleListModeCollapse = toggleListModeCollapse;
+window.collapseListMode = collapseListMode;
+window.expandListMode = expandListMode;
+window.updateCollapseUrlCount = updateCollapseUrlCount;
 
 // Expose variables to global scope for use in main app.js
 window.listMode = {

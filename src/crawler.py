@@ -1065,10 +1065,16 @@ class WebCrawler:
         """Async crawling loop for JavaScript rendering"""
         try:
             # Initialize JavaScript renderer
+            print("Initializing JavaScript renderer...")
             await self.js_renderer.initialize()
+            print("JavaScript renderer initialized successfully")
 
             max_workers = self.config.get('js_max_concurrent_pages', 3)
             active_tasks = set()
+            
+            # Track initial stats
+            initial_pending = self.link_manager.get_stats()['pending']
+            print(f"Starting JS crawl with {initial_pending} URLs in queue, max_workers={max_workers}")
 
             while self.is_running and self.stats['crawled'] < self.config['max_urls']:
                 # Check if paused
@@ -1076,7 +1082,11 @@ class WebCrawler:
                     await asyncio.sleep(1)
                     continue
 
+                # Get current queue stats
+                link_stats = self.link_manager.get_stats()
+                
                 # Submit new tasks - fill ALL available slots
+                urls_submitted = 0
                 while len(active_tasks) < max_workers:
                     url_info = self.link_manager.get_next_url()
                     if not url_info:
@@ -1087,15 +1097,19 @@ class WebCrawler:
                     if depth <= self.config['max_depth']:
                         # SMOOTH RATE LIMITING: Only apply if delay > 0
                         if self.config.get('delay', 0) > 0:
-                            self.rate_limiter.acquire()
+                            await self.rate_limiter.acquire_async()
 
                         # Create task
                         task = asyncio.create_task(self._crawl_url_with_javascript(current_url, depth))
                         active_tasks.add(task)
+                        urls_submitted += 1
+                
+                if urls_submitted > 0:
+                    print(f"Submitted {urls_submitted} new URLs for JS rendering, active tasks: {len(active_tasks)}")
 
                 # Process completed tasks
                 if active_tasks:
-                    done, active_tasks = await asyncio.wait(active_tasks, timeout=0.01, return_when=asyncio.FIRST_COMPLETED)
+                    done, active_tasks = await asyncio.wait(active_tasks, timeout=0.5, return_when=asyncio.FIRST_COMPLETED)
 
                     for task in done:
                         try:
@@ -1105,7 +1119,7 @@ class WebCrawler:
                                     self.crawl_results.append(result)
                                     self.stats['crawled'] += 1
                                     self.stats['depth'] = max(self.stats['depth'], result.get('depth', 0))
-                                    print(f"Added URL to results (JS): {result['url']} - Total in results: {len(self.crawl_results)}")
+                                    print(f"JS Crawl complete: {result['url']} - Total results: {len(self.crawl_results)}")
 
                                 # Detect issues
                                 issues_before = len(self.issue_detector.detected_issues)
@@ -1118,14 +1132,17 @@ class WebCrawler:
                                     self.unsaved_issues.extend(new_issues)
                         except Exception as e:
                             print(f"Error in async crawl task: {e}")
+                            import traceback
+                            traceback.print_exc()
 
-                # Check completion
+                # Check completion - only exit if no pending URLs AND no active tasks
                 link_stats = self.link_manager.get_stats()
                 if link_stats['pending'] == 0 and len(active_tasks) == 0:
-                    print("No more URLs to crawl")
+                    print(f"No more URLs to crawl. Crawled: {self.stats['crawled']}")
                     break
 
-                await asyncio.sleep(0.001)
+                await asyncio.sleep(0.01)
+
 
             # Run PageSpeed if enabled
             if self.config.get('enable_pagespeed', False):

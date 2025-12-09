@@ -26,7 +26,7 @@ class SettingsManager:
         # user: Crawler, Export, Issue Exclusion tabs
         user_settings = [
             # Crawler tab
-            'maxDepth', 'maxUrls', 'crawlDelay', 'followRedirects', 'crawlExternalLinks',
+            'crawlMode', 'maxDepth', 'maxUrls', 'crawlDelay', 'followRedirects', 'crawlExternalLinks',
             # Export tab
             'exportFormat', 'exportFields',
             # Issues tab
@@ -73,6 +73,7 @@ class SettingsManager:
         """Get fresh default settings"""
         return {
             # Crawler settings
+            'crawlMode': 'standard',  # 'standard' or 'list'
             'maxDepth': 3,
             'maxUrls': 5000000,
             'crawlDelay': 1,
@@ -475,6 +476,7 @@ class SettingsManager:
         settings = self.get_settings()
 
         return {
+            'crawl_mode': settings['crawlMode'],
             'max_depth': settings['maxDepth'],
             'max_urls': settings['maxUrls'],
             'delay': settings['crawlDelay'],

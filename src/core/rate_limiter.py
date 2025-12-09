@@ -42,3 +42,26 @@ class RateLimiter:
         with self.lock:
             self.requests_per_second = max(0.01, requests_per_second)
             self.min_interval = 1.0 / self.requests_per_second if self.requests_per_second > 0 else 0
+
+    async def acquire_async(self):
+        """
+        Acquire permission to make a request asynchronously.
+        Waits without blocking the event loop.
+        """
+        import asyncio
+        
+        wait_time = 0
+        with self.lock:
+            now = time.time()
+            time_since_last = now - self.last_request_time
+
+            if time_since_last < self.min_interval:
+                wait_time = self.min_interval - time_since_last
+                # predictive update: assume we will wait and then execute
+                self.last_request_time = now + wait_time
+            else:
+                self.last_request_time = now
+        
+        if wait_time > 0:
+            await asyncio.sleep(wait_time)
+
