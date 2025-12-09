@@ -927,8 +927,10 @@ class WebCrawler:
 
                 # Extract links for further crawling
                 should_extract = (
-                    (is_internal and depth < self.config['max_depth']) or
-                    (self.config['crawl_external'] and depth < self.config['max_depth'])
+                    not self.list_mode and (
+                        (is_internal and depth < self.config['max_depth']) or
+                        (self.config['crawl_external'] and depth < self.config['max_depth'])
+                    )
                 )
 
                 if should_extract:
@@ -1038,8 +1040,10 @@ class WebCrawler:
 
             # Extract links for further crawling
             should_extract = (
-                (is_internal and depth < self.config['max_depth']) or
-                (self.config['crawl_external'] and depth < self.config['max_depth'])
+                not self.list_mode and (
+                    (is_internal and depth < self.config['max_depth']) or
+                    (self.config['crawl_external'] and depth < self.config['max_depth'])
+                )
             )
 
             if should_extract:
